@@ -1,0 +1,139 @@
+/* General Styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff; 
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+/* Header Styling */
+header {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: right; 
+}
+
+nav li {
+    display: inline-block;
+    margin-left: 20px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f8f9fa;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: #333; 
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Hero Section Styling */
+.hero {
+    background-color: #e9ecef; 
+    padding: 100px 0; 
+    text-align: center; 
+}
+
+.hero h1 {
+    font-size: 3rem; 
+    margin-bottom: 20px; 
+}
+
+/* Featured Products Styling */
+.featured-products {
+    padding: 50px 0;
+}
+
+.product-grid {
+    display: flex;
+    justify-content: space-between;
+}
+
+.product {
+    width: calc(33.33% - 20px); 
+    text-align: center;
+}
+
+.product img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Testimonials Styling */
+.testimonials {
+    background-color: #f8f9fa;
+    padding: 50px 0;
+}
+
+/* About Us Styling */
+.about-us {
+    padding: 50px 0;
+}
+
+/* Newsletter Styling */
+.newsletter {
+    background-color: #343a40; 
+    color: #fff; 
+    padding: 50px 0;
+    text-align: center;
+}
+
+.newsletter form {
+    display: inline-block; 
+}
+
+/* Footer Styling */
+footer {
+    background-color: #333;
+    color: #fff;
+    padding: 30px 0;
+}
+
+.footer-columns {
+    display: flex;
+    justify-content: space-between;
+}
+
+.col {
+    width: calc(33.33% - 20px);
+}
+
+.col ul {
+    list-style: none;
+    padding: 0;
+}
