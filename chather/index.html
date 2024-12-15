@@ -1,35 +1,186 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Selection App</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="styles/styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div id="click-count">Click Count: 0</div>
-            <div id="user-list-button">Selected Users</div>
-        </div>
-        <div class="user-grid" id="user-grid">
-            </div>
-        <div class="pagination" id="pagination">
-            </div>
-        <div id="user-list-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div id="user-list-content" class="user-list-content">
-                </div>
-            </div>
-        </div>
+
+<html>
+  <head>
+    <title>User Display with iFrame</title>
+    <style>
+      #click-count {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 16px;
+      }
+
+      #users-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .user-image {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 10px;
+        position: relative;
+      }
+
+      .user-image img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+      }
+
+      .user-details-small {
+        position: absolute;
+        bottom: 5px;
+        font-size: 12px;
+        color: white;
+      }
+
+      .age {
+        left: 5px;
+      }
+
+      .new {
+        right: 5px;
+      }
+
+      #user-details {
+        width: 100%;
+        height: 300px;
+        margin-top: 20px;
+        border: 1px solid #ccc;
+      }
+
+      #pagination {
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      #clicked-users-list {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        display: none;
+        /* Initially hidden */
+      }
+
+      #clicked-users-list.show {
+        display: block;
+        /* Display when active */
+      }
+
+      #clicked-users-list img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="click-count">0</div>
+    <div id="users-container"></div>
+    <iframe id="user-details" src=""></iframe>
+    <div id="pagination">
+      <button id="prev-page">Previous</button>
+      <button id="next-page">Next</button>
     </div>
-    <iframe id="user-iframe" src="" frameborder="0"></iframe>
-    <div class="controls">
-        <button id="record-button">Record</button>
-        <button id="upload-button">Upload</button>
-    </div>
-    <script src="js/script.js"></script>
-</body>
+    <div id="clicked-users-list"></div>
+    <script>
+      const usersContainer = document.getElementById('users-container');
+      const userDetailsIframe = document.getElementById('user-details');
+      const prevPageButton = document.getElementById('prev-page');
+      const nextPageButton = document.getElementById('next-page');
+      const clickCountDiv = document.getElementById('click-count');
+      const clickedUsersList = document.getElementById('clicked-users-list');
+      
+      const usersPerPage = 25;
+      let currentPage = 1;
+      let usersData = [];
+      let clickCount = 0;
+      
+      // Sample JSON response data (replace with your actual API call)
+      const usersDataPromise = fetch('https://chaturbate.com/api/public/affiliates/onlinerooms/?wm=9cg6A&client_ip=request_ip')
+      .then(response => response.json())
+      .then(data => {
+        usersData = data.results;
+        displayUsers();
+      });
+      
+      function displayUsers() {
+        const startIndex = (currentPage - 1) * usersPerPage;
+        const endIndex = startIndex + usersPerPage;
+        const usersToDisplay = usersData.slice(startIndex, endIndex);
+        
+        usersContainer.innerHTML = '';
+        
+        usersToDisplay.forEach(user => {
+          const userDiv = document.createElement('div');
+          userDiv.classList.add('user-image');
+          
+          const image = document.createElement('img');
+          image.src = user.image_url;
+          image.addEventListener('click', () => {
+            clickCount++;
+            clickCountDiv.textContent = clickCount;
+            userDetailsIframe.src = user.iframe_embed;
+            saveClickedUser(user);
+            displayClickedUsers();
+          });
+          
+          const ageSpan = document.createElement('span');
+          ageSpan.classList.add('user-details-small', 'age');
+          ageSpan.textContent = user.age;
+          
+          const newSpan = document.createElement('span');
+          newSpan.classList.add('user-details-small', 'new');
+          newSpan.textContent = user.is_new ? 'New' : '';
+          
+          userDiv.appendChild(image);
+          userDiv.appendChild(ageSpan);
+          userDiv.appendChild(newSpan);
+          usersContainer.appendChild(userDiv);
+        });
+        
+        prevPageButton.disabled = currentPage === 1;
+        nextPageButton.disabled = endIndex >= usersData.length;
+      }
+      
+      function saveClickedUser(user) {
+        let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
+        if (!clickedUsers.find(u => u.id === user.id)) {
+          clickedUsers.push(user);
+          localStorage.setItem('clickedUsers', JSON.stringify(clickedUsers));
+        }
+      }
+      
+      function displayClickedUsers() {
+        clickedUsersList.innerHTML = '';
+        let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
+        clickedUsers.forEach(user => {
+          const userImage = document.createElement('img');
+          userImage.src = user.image_url;
+          userImage.addEventListener('click', () => {
+            userDetailsIframe.src = user.iframe_embed;
+          });
+          clickedUsersList.appendChild(userImage);
+        });
+        clickedUsersList.classList.add('show');
+      }
+
+      prevPageButton.addEventListener('click', () => {
+        currentPage--;
+        displayUsers();
+      });
+
+      nextPageButton.addEventListener('click', () => {
+        currentPage++;
+        displayUsers();
+      });
+    </script>
+  </body>
 </html>

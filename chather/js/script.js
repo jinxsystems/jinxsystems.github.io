@@ -173,6 +173,30 @@ class UserGrid {
     }
 }
 
+function fetchData() {
+    const url = `https://chaturbate.com/api/public/affiliates/onlinerooms/?wm=9cg6A&client_ip=${request_ip}`;
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Process the fetched data
+            // console.log(data);
+            // Additional logic to display the data on your web page
+        })
+        .catch(error => {
+            // console.error('There has been a problem with your fetch operation:', error);
+        });
+}
+
+// Call the function to fetch data on page load (or as needed)
+fetchData();
+
+
 // Sample user data (replace with your actual user data)
 const users = [
     new User('User 1', 25, true, 'images/user1.jpg'),
