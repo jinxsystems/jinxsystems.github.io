@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
   <head>
     <title>User Display with iFrame</title>
@@ -50,6 +49,7 @@
         height: 300px;
         margin-top: 20px;
         border: 1px solid #ccc;
+        overflow-y: scroll; /* Add scrollbar for overflowing content */
       }
 
       #pagination {
@@ -84,7 +84,7 @@
   <body>
     <div id="click-count">0</div>
     <div id="users-container"></div>
-    <iframe id="user-details" src=""></iframe>
+    <div id="user-details"></div>
     <div id="pagination">
       <button id="prev-page">Previous</button>
       <button id="next-page">Next</button>
@@ -92,64 +92,86 @@
     <div id="clicked-users-list"></div>
     <script>
       const usersContainer = document.getElementById('users-container');
-      const userDetailsIframe = document.getElementById('user-details');
+      const userDetailsDiv = document.getElementById('user-details');
       const prevPageButton = document.getElementById('prev-page');
       const nextPageButton = document.getElementById('next-page');
       const clickCountDiv = document.getElementById('click-count');
       const clickedUsersList = document.getElementById('clicked-users-list');
-      
+
       const usersPerPage = 25;
       let currentPage = 1;
       let usersData = [];
       let clickCount = 0;
-      
+
       // Sample JSON response data (replace with your actual API call)
       const usersDataPromise = fetch('https://chaturbate.com/api/public/affiliates/onlinerooms/?wm=9cg6A&client_ip=request_ip')
-      .then(response => response.json())
-      .then(data => {
-        usersData = data.results;
-        displayUsers();
-      });
-      
+        .then(response => response.json())
+        .then(data => {
+          usersData = data.results;
+          displayUsers();
+        });
+
       function displayUsers() {
         const startIndex = (currentPage - 1) * usersPerPage;
         const endIndex = startIndex + usersPerPage;
         const usersToDisplay = usersData.slice(startIndex, endIndex);
-        
+
         usersContainer.innerHTML = '';
-        
+
         usersToDisplay.forEach(user => {
           const userDiv = document.createElement('div');
           userDiv.classList.add('user-image');
-          
+
           const image = document.createElement('img');
           image.src = user.image_url;
           image.addEventListener('click', () => {
             clickCount++;
             clickCountDiv.textContent = clickCount;
-            userDetailsIframe.src = user.iframe_embed;
+
+            // Display all user data in the div
+            userDetailsDiv.innerHTML = `
+              <h2>${user.username}</h2>
+              <p>Gender: ${user.gender}</p>
+              <p>Location: ${user.location}</p>
+              <p>Current Show: ${user.current_show}</p>
+              <p>Room Subject: ${user.room_subject}</p>
+              <p>Tags: ${user.tags.join(', ')}</p>
+              <p>Is New: ${user.is_new}</p>
+              <p>Number of Users: ${user.num_users}</p>
+              <p>Number of Followers: ${user.num_followers}</p>
+              <p>Country: ${user.country}</p>
+              <p>Spoken Languages: ${user.spoken_languages}</p>
+              <p>Display Name: ${user.display_name}</p>
+              <p>Birthday: ${user.birthday}</p>
+              <p>Is HD: ${user.is_hd}</p>
+              <p>Age: ${user.age}</p>
+              <p>Seconds Online: ${user.seconds_online}</p>
+              <p>Image URL: ${user.image_url}</p>
+              <p>Chat Room URL: ${user.chat_room_url}</p>
+            `;
+
             saveClickedUser(user);
             displayClickedUsers();
           });
-          
+
           const ageSpan = document.createElement('span');
           ageSpan.classList.add('user-details-small', 'age');
           ageSpan.textContent = user.age;
-          
+
           const newSpan = document.createElement('span');
           newSpan.classList.add('user-details-small', 'new');
           newSpan.textContent = user.is_new ? 'New' : '';
-          
+
           userDiv.appendChild(image);
           userDiv.appendChild(ageSpan);
           userDiv.appendChild(newSpan);
           usersContainer.appendChild(userDiv);
         });
-        
+
         prevPageButton.disabled = currentPage === 1;
         nextPageButton.disabled = endIndex >= usersData.length;
       }
-      
+
       function saveClickedUser(user) {
         let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
         if (!clickedUsers.find(u => u.id === user.id)) {
@@ -157,7 +179,7 @@
           localStorage.setItem('clickedUsers', JSON.stringify(clickedUsers));
         }
       }
-      
+
       function displayClickedUsers() {
         clickedUsersList.innerHTML = '';
         let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
@@ -165,7 +187,27 @@
           const userImage = document.createElement('img');
           userImage.src = user.image_url;
           userImage.addEventListener('click', () => {
-            userDetailsIframe.src = user.iframe_embed;
+            // Display all user data in the div
+            userDetailsDiv.innerHTML = `
+              <h2>${user.username}</h2>
+              <p>Gender: ${user.gender}</p>
+              <p>Location: ${user.location}</p>
+              <p>Current Show: ${user.current_show}</p>
+              <p>Room Subject: ${user.room_subject}</p>
+              <p>Tags: ${user.tags.join(', ')}</p>
+              <p>Is New: ${user.is_new}</p>
+              <p>Number of Users: ${user.num_users}</p>
+              <p>Number of Followers: ${user.num_followers}</p>
+              <p>Country: ${user.country}</p>
+              <p>Spoken Languages: ${user.spoken_languages}</p>
+              <p>Display Name: ${user.display_name}</p>
+              <p>Birthday: ${user.birthday}</p>
+              <p>Is HD: ${user.is_hd}</p>
+              <p>Age: ${user.age}</p>
+              <p>Seconds Online: ${user.seconds_online}</p>
+              <p>Image URL: ${user.image_url}</p>
+              <p>Chat Room URL: ${user.chat_room_url}</p>
+            `;
           });
           clickedUsersList.appendChild(userImage);
         });
