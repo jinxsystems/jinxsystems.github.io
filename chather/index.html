@@ -79,18 +79,91 @@
         border-radius: 50%;
         margin-right: 5px;
       }
-    </style>
+    /* Basic styling - customize as needed */
+    #search-container {
+        margin-bottom: 20px;
+    }
+    #user-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+        gap: 20px;
+    }
+    .user-card {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer; /* Add cursor style for better user experience */
+    }
+    .user-card img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    #user-popup {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        display: none; /* Initially hidden */
+    }
+    #user-popup img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    /* Styles for the clicked users list */
+    #clicked-users-list {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        display: none; /* Initially hidden */
+    }
+    #clicked-users-list.show {
+        display: block; /* Display when active */
+    }
+    #clicked-users-list img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 5px;
+        cursor: pointer; /* Add cursor style for better user experience */
+    }
+</style>
   </head>
   <body>
-    <div id="click-count">0</div>
-    <div id="users-container"></div>
-    <div id="user-details"></div>
-    <div id="pagination">
-      <button id="prev-page">Previous</button>
-      <button id="next-page">Next</button>
+    <div id="search-container">
+    <input type="text" id="search-bar" placeholder="Search users...">
+    <div id="search-results"></div>
     </div>
+
+    <div id="iframe-container">
+    <iframe id="user-iframe" src="" width="100%" height="300px"></iframe>
+    </div>
+
+    <div id="user-grid"></div>
+
+    <div id="pagination">
+    <button id="prev-page">Previous</button>
+    <button id="next-page">Next</button>
+    </div>
+
+    <div id="user-popup">
+    <img id="most-selected-user" src="" alt="Most Selected User">
+    </div>
+
     <div id="clicked-users-list"></div>
     <script>
+      const userGrid = document.getElementById('user-grid');
+      const userIframe = document.getElementById('user-iframe');
+      const mostSelectedUserImg = document.getElementById('most-selected-user');
+      const userPopup = document.getElementById('user-popup');
       const usersContainer = document.getElementById('users-container');
       const userDetailsDiv = document.getElementById('user-details');
       const prevPageButton = document.getElementById('prev-page');
@@ -111,7 +184,26 @@
           displayUsers();
         });
 
-      function displayUsers() {
+      // Function to display users in the grid
+      function displayUsers(usersToDisplay) {
+          userGrid.innerHTML = ''; // Clear previous users
+    
+          usersToDisplay.forEach(user => {
+          const userCard = document.createElement('div');
+          userCard.classList.add('user-card');
+          userCard.innerHTML = `
+              <img src="${user.imgSrc}" alt="${user.name}">
+              <h3>${user.name}</h3>
+          `;
+          userCard.addEventListener('click', () => {
+              handleUserClick(user.id);
+              userIframe.src = user.iframeSrc; // Load iframe
+          });
+          userGrid.appendChild(userCard);
+          });
+      }
+
+      function _displayUsers() {
         const startIndex = (currentPage - 1) * usersPerPage;
         const endIndex = startIndex + usersPerPage;
         const usersToDisplay = usersData.slice(startIndex, endIndex);
@@ -172,15 +264,57 @@
         nextPageButton.disabled = endIndex >= usersData.length;
       }
 
-      function saveClickedUser(user) {
+    // Function to handle user clicks
+    function handleUserClick(userId) {
+        const user = users.find(user => user.id === userId);
+        if (user) {
+        user.clicks++;
+        // Update click count in local storage or server-side database
+        // ... (Implementation for storing click data)
+
+        updateMostSelectedUser();
+        saveClickedUser(user);
+        displayClickedUsers();
+        }
+    }
+
+    // Function to update the most selected user in the popup
+    function updateMostSelectedUser() {
+        // Sort users by clicks in descending order
+        const sortedUsers = users.slice().sort((a, b) => b.clicks - a.clicks);
+        const mostSelectedUser = sortedUsers[0];
+
+        if (mostSelectedUser) { // Check if there is a most selected user
+        mostSelectedUserImg.src = mostSelectedUser.imgSrc;
+        userPopup.style.display = 'block'; // Show the popup
+        }
+    }
+
+    // Function to save clicked user to local storage
+    function saveClickedUser(user) {
         let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
         if (!clickedUsers.find(u => u.id === user.id)) {
-          clickedUsers.push(user);
-          localStorage.setItem('clickedUsers', JSON.stringify(clickedUsers));
+        clickedUsers.push(user);
+        localStorage.setItem('clickedUsers', JSON.stringify(clickedUsers));
         }
-      }
+    }
 
-      function displayClickedUsers() {
+    // Function to display clicked users in the list
+    function displayClickedUsers() {
+        clickedUsersList.innerHTML = '';
+        let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
+        clickedUsers.forEach(user => {
+        const userImage = document.createElement('img');
+        userImage.src = user.imgSrc;
+        userImage.addEventListener('click', () => {
+            userIframe.src = user.iframeSrc; // Load iframe for clicked user
+        });
+        clickedUsersList.appendChild(userImage);
+        });
+        clickedUsersList.classList.add('show');
+    }
+
+      function _displayClickedUsers() {
         clickedUsersList.innerHTML = '';
         let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
         clickedUsers.forEach(user => {
@@ -214,15 +348,30 @@
         clickedUsersList.classList.add('show');
       }
 
-      prevPageButton.addEventListener('click', () => {
-        currentPage--;
-        displayUsers();
-      });
+  // Pagination functionality
+  function paginateUsers() {
+    const startIndex = (currentPage - 1) * usersPerPage;
+    const endIndex = startIndex + usersPerPage;
+    const usersToDisplay = users.slice(startIndex, endIndex);
+    displayUsers(usersToDisplay);
 
-      nextPageButton.addEventListener('click', () => {
-        currentPage++;
-        displayUsers();
-      });
+    prevPageButton.disabled = currentPage === 1;
+    nextPageButton.disabled = endIndex >= users.length;
+  }
+
+  prevPageButton.addEventListener('click', () => {
+    currentPage--;
+    paginateUsers();
+  });
+
+  nextPageButton.addEventListener('click', () => {
+    currentPage++;
+    paginateUsers();
+  });
+
+  // Initial display of users (with pagination)
+  paginateUsers();
+
     </script>
   </body>
 </html>

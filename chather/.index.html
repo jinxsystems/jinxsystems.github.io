@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>User Display with Iframe</title>
+</head>
+<body>
+
+<div id="clicked-users-list"></div>
+
+<script>
+  // Sample user data (replace with your actual data)
+  const users = [
+    { id: 1, name: 'User A', clicks: 0, imgSrc: 'userA.jpg', iframeSrc: 'https://www.example.com/userA' },
+    { id: 2, name: 'User B', clicks: 0, imgSrc: 'userB.jpg', iframeSrc: 'https://www.example.com/userB' },
+    // ... more users
+  ];
+
+  const userGrid = document.getElementById('user-grid');
+  const userIframe = document.getElementById('user-iframe');
+  const mostSelectedUserImg = document.getElementById('most-selected-user');
+  const userPopup = document.getElementById('user-popup');
+  const clickedUsersList = document.getElementById('clicked-users-list');
+  const prevPageButton = document.getElementById('prev-page');
+  const nextPageButton = document.getElementById('next-page');
+
+  const usersPerPage = 10; // Adjust as needed
+  let currentPage = 1;
+
+  // Function to display users in the grid
+  function displayUsers(usersToDisplay) {
+    userGrid.innerHTML = ''; // Clear previous users
+
+    usersToDisplay.forEach(user => {
+      const userCard = document.createElement('div');
+      userCard.classList.add('user-card');
+      userCard.innerHTML = `
+        <img src="${user.imgSrc}" alt="${user.name}">
+        <h3>${user.name}</h3>
+      `;
+      userCard.addEventListener('click', () => {
+        handleUserClick(user.id);
+        userIframe.src = user.iframeSrc; // Load iframe
+      });
+      userGrid.appendChild(userCard);
+    });
+  }
+
+  // Function to handle user clicks
+  function handleUserClick(userId) {
+    const user = users.find(user => user.id === userId);
+    if (user) {
+      user.clicks++;
+      // Update click count in local storage or server-side database
+      // ... (Implementation for storing click data)
+
+      updateMostSelectedUser();
+      saveClickedUser(user);
+      displayClickedUsers();
+    }
+  }
+
+  // Function to update the most selected user in the popup
+  function updateMostSelectedUser() {
+    // Sort users by clicks in descending order
+    const sortedUsers = users.slice().sort((a, b) => b.clicks - a.clicks);
+    const mostSelectedUser = sortedUsers[0];
+
+    if (mostSelectedUser) { // Check if there is a most selected user
+      mostSelectedUserImg.src = mostSelectedUser.imgSrc;
+      userPopup.style.display = 'block'; // Show the popup
+    }
+  }
+
+  // Function to save clicked user to local storage
+  function saveClickedUser(user) {
+    let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
+    if (!clickedUsers.find(u => u.id === user.id)) {
+      clickedUsers.push(user);
+      localStorage.setItem('clickedUsers', JSON.stringify(clickedUsers));
+    }
+  }
+
+  // Function to display clicked users in the list
+  function displayClickedUsers() {
+    clickedUsersList.innerHTML = '';
+    let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
+    clickedUsers.forEach(user => {
+      const userImage = document.createElement('img');
+      userImage.src = user.imgSrc;
+      userImage.addEventListener('click', () => {
+        userIframe.src = user.iframeSrc; // Load iframe for clicked user
+      });
+      clickedUsersList.appendChild(userImage);
+    });
+    clickedUsersList.classList.add('show');
+  }
+
+  // Pagination functionality
+  function paginateUsers() {
+    const startIndex = (currentPage - 1) * usersPerPage;
+    const endIndex = startIndex + usersPerPage;
+    const usersToDisplay = users.slice(startIndex, endIndex);
+    displayUsers(usersToDisplay);
+
+    prevPageButton.disabled = currentPage === 1;
+    nextPageButton.disabled = endIndex >= users.length;
+  }
+
+  prevPageButton.addEventListener('click', () => {
+    currentPage--;
+    paginateUsers();
+  });
+
+  nextPageButton.addEventListener('click', () => {
+    currentPage++;
+    paginateUsers();
+  });
+
+  // Initial display of users (with pagination)
+  paginateUsers();
+
+  // ... (Implementation for search and online user checks)
+</script>
+
+</body>
+</html>
