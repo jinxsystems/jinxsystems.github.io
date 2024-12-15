@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Selection App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div id="click-count">Click Count: 0</div>
+            <div id="user-list-button">Selected Users</div>
+        </div>
+        <div class="user-grid" id="user-grid">
+            </div>
+        <div class="pagination" id="pagination">
+            </div>
+        <div id="user-list-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="user-list-content" class="user-list-content">
+                </div>
+            </div>
+        </div>
+    </div>
+    <iframe id="user-iframe" src="" frameborder="0"></iframe>
+    <div class="controls">
+        <button id="record-button">Record</button>
+        <button id="upload-button">Upload</button>
+    </div>
+    <script src="scripts/scripts.js"></script>
+</body>
+</html>
