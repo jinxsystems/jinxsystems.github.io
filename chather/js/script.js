@@ -3,205 +3,182 @@ class User {
     #age;
     #isNew;
     #image;
-
-    constructor(name, age, isNew, image) {
-        this.#name = name;
-        this.#age = age;
-        this.#isNew = isNew;
-        this.#image = image;
+    #revShareUrl;
+  
+    constructor(data) {
+      this.#name = data.username;
+      this.#age = data.age;
+      this.#isNew = data.is_new;
+      this.#image = data.image_url;
+      this.#revShareUrl = data.chat_room_url_revshare;
     }
-
-    get name() { return this.#name; }
-    get age() { return this.#age; }
-    get isNew() { return this.#isNew; }
-    get image() { return this.#image; }
-}
-
-class UserGrid {
+  
+    get name() {
+      return this.#name;
+    }
+    get age() {
+      return this.#age;
+    }
+    get isNew() {
+      return this.#isNew;
+    }
+    get image() {
+      return this.#image;
+    }
+    get revShareUrl() {
+      return this.#revShareUrl;
+    }
+  }
+  
+  class UserGrid {
+    static #usersPerPage = 25;
+    #currentPage;
+    #users;
+    #clickCount;
+    #usersContainer;
+    #userDetailsIframe;
+    #prevPageButton;
+    #nextPageButton;
+    #clickCountDiv;
+    #clickedUsersList;
+  
     constructor(users) {
-        this.users = users;
-        this.currentPage = 1;
-        this.usersPerPage = 25;
-        this.selectedUser = null;
-        this.clickCount = 0;
-
-        this.init();
+      this.#currentPage = 1;
+      this.#users = users;
+      this.#clickCount = 0;
+      this.#usersContainer = document.getElementById('users-container');
+      this.#userDetailsIframe = document.getElementById('user-details');
+      this.#prevPageButton = document.getElementById('prev-page');
+      this.#nextPageButton = document.getElementById('next-page');
+      this.#clickCountDiv = document.getElementById('click-count');
+      this.#clickedUsersList = document.getElementById('clicked-users-list');
+  
+      this.init();
     }
-
+  
     init() {
-        this.renderUserGrid();
-        this.renderPagination();
-        this.addEventListeners();
-        this.loadClickCount();
-        this.loadSelectedUsers();
+      this.renderUserGrid();
+      this.addEventListeners();
+      this.loadClickCount();
+      this.loadClickedUsers();
     }
-
+  
     renderUserGrid() {
-        const startIndex = (this.currentPage - 1) * this.usersPerPage;
-        const endIndex = startIndex + this.usersPerPage;
-        const userGrid = document.getElementById('user-grid');
-        userGrid.innerHTML = '';
-
-        for (let i = startIndex; i < endIndex && i < this.users.length; i++) {
-            const user = this.users[i];
-            const userDiv = document.createElement('div');
-            const userImage = document.createElement('img');
-            userImage.src = user.image;
-            userImage.alt = user.name;
-            userImage.title = `Age: ${user.age}, New: ${user.isNew}`;
-            userDiv.appendChild(userImage);
-            userGrid.appendChild(userDiv);
-        }
+      const startIndex = (this.#currentPage - 1) * UserGrid.#usersPerPage;
+      const endIndex = startIndex + UserGrid.#usersPerPage;
+      this.#usersContainer.innerHTML = '';
+  
+      for (let i = startIndex; i < endIndex && i < this.#users.length; i++) {
+        const user = this.#users[i];
+        const userDiv = document.createElement('div');
+        userDiv.classList.add('user-image');
+  
+        const image = document.createElement('img');
+        image.src = user.image;
+        image.addEventListener('click', () => {
+          this.handleUserClick(user);
+        });
+  
+        const ageSpan = document.createElement('span');
+        ageSpan.classList.add('user-details-small', 'age');
+        ageSpan.textContent = user.age;
+  
+        const newSpan = document.createElement('span');
+        newSpan.classList.add('user-details-small', 'new');
+        newSpan.textContent = user.isNew ? 'New' : '';
+  
+        userDiv.appendChild(image);
+        userDiv.appendChild(ageSpan);
+        userDiv.appendChild(newSpan);
+        this.#usersContainer.appendChild(userDiv);
+      }
+  
+      this.updatePagination();
     }
-
-    renderPagination() {
-        const pageCount = Math.ceil(this.users.length / this.usersPerPage);
-        const pagination = document.getElementById('pagination');
-        pagination.innerHTML = '';
-
-        for (let i = 1; i <= pageCount; i++) {
-            const button = document.createElement('button');
-            button.textContent = i;
-            button.addEventListener('click', () => {
-                this.currentPage = i;
-                this.renderUserGrid();
-            });
-            pagination.appendChild(button);
-        }
-    }
-
+  
     addEventListeners() {
-        const userGrid = document.getElementById('user-grid');
-        userGrid.addEventListener('click', (event) => {
-            const image = event.target;
-            if (image.tagName === 'IMG') {
-                this.selectedUser = this.getSelectedUser(image.src);
-                this.updateIframe();
-                this.updateClickCount();
-                this.saveSelectedUsers();
-            }
-        });
-
-        const userListButton = document.getElementById('user-list-button');
-        const modal = document.getElementById('user-list-modal');
-        const close = document.querySelector('.close');
-
-        userListButton.addEventListener('click', () => {
-            this.renderUserList();
-            modal.style.display = 'block';
-        });
-
-        close.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
+      this.#prevPageButton.addEventListener('click', () => this.previousPage());
+      this.#nextPageButton.addEventListener('click', () => this.nextPage());
     }
-
-    getSelectedUser(imageSrc) {
-        for (let i = 0; i < this.users.length; i++) {
-            const user = this.users[i];
-            if (user.image === imageSrc) {
-                return user;
-            }
-        }
-        return null;
+  
+    @logClick
+    handleUserClick(user) {
+      this.#clickCount++;
+      this.#clickCountDiv.textContent = this.#clickCount;
+      this.#userDetailsIframe.src = user.revShareUrl;
+      this.saveClickedUser(user);
+      this.displayClickedUsers();
     }
-
-    updateIframe() {
-        const iframe = document.getElementById('user-iframe');
-        iframe.src = this.selectedUser ? `user.html?id=${this.selectedUser.name}` : '';
+  
+    saveClickedUser(user) {
+      let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
+      if (!clickedUsers.find(u => u.name === user.name)) {
+        clickedUsers.push({name: user.name, image: user.image, revShareUrl: user.revShareUrl});
+        localStorage.setItem('clickedUsers', JSON.stringify(clickedUsers));
+      }
     }
-
-    updateClickCount() {
-        this.clickCount++;
-        const clickCountDiv = document.getElementById('click-count');
-        clickCountDiv.textContent = `Click Count: ${this.clickCount}`;
-        localStorage.setItem('clickCount', this.clickCount);
+  
+    displayClickedUsers() {
+      this.#clickedUsersList.innerHTML = '';
+      let clickedUsers = JSON.parse(localStorage.getItem('clickedUsers')) || [];
+      clickedUsers.forEach(user => {
+        const userImage = document.createElement('img');
+        userImage.src = user.image;
+        userImage.addEventListener('click', () => {
+          this.#userDetailsIframe.src = user.revShareUrl;
+        });
+        this.#clickedUsersList.appendChild(userImage);
+      });
+      this.#clickedUsersList.classList.add('show');
     }
-
+  
+    loadClickedUsers() {
+      this.displayClickedUsers();
+    }
+  
+    updatePagination() {
+      this.#prevPageButton.disabled = this.#currentPage === 1;
+      this.#nextPageButton.disabled = (this.#currentPage * UserGrid.#usersPerPage) >= this.#users.length;
+    }
+  
+    previousPage() {
+      if (this.#currentPage > 1) {
+        this.#currentPage--;
+        this.renderUserGrid();
+      }
+    }
+  
+    nextPage() {
+      if ((this.#currentPage * UserGrid.#usersPerPage) < this.#users.length) {
+        this.#currentPage++;
+        this.renderUserGrid();
+      }
+    }
+  
     loadClickCount() {
-        const storedClickCount = localStorage.getItem('clickCount');
-        if (storedClickCount) {
-            this.clickCount = parseInt(storedClickCount);
-            this.updateClickCount();
-        }
+      const storedClickCount = localStorage.getItem('clickCount');
+      if (storedClickCount) {
+        this.#clickCount = parseInt(storedClickCount);
+        this.#clickCountDiv.textContent = this.#clickCount;
+      }
     }
-
-    saveSelectedUsers() {
-        const selectedUserNames = this.users.filter(user => user.selected).map(user => user.name);
-        localStorage.setItem('selectedUsers', JSON.stringify(selectedUserNames));
-    }
-
-    loadSelectedUsers() {
-        const storedSelectedUsers = localStorage.getItem('selectedUsers');
-        if (storedSelectedUsers) {
-            const selectedUserNames = JSON.parse(storedSelectedUsers);
-            this.users.forEach(user => {
-                if (selectedUserNames.includes(user.name)) {
-                    user.selected = true;
-                }
-            });
-        }
-    }
-
-    renderUserList() {
-        const userListContent = document.getElementById('user-list-content');
-        userListContent.innerHTML = '';
-        const selectedUsers = this.users.filter(user => user.selected);
-
-        if (selectedUsers.length > 0) {
-            const userList = document.createElement('ul');
-            selectedUsers.forEach(user => {
-                const listItem = document.createElement('li');
-                const userImage = document.createElement('img');
-                userImage.src = user.image;
-                userImage.alt = user.name;
-                listItem.appendChild(userImage);
-                userList.appendChild(listItem);
-            });
-            userListContent.appendChild(userList);
-        } else {
-            const message = document.createElement('p');
-            message.textContent = 'No users selected yet.';
-            userListContent.appendChild(message);
-        }
-    }
-}
-
-function fetchData() {
-    const url = `https://chaturbate.com/api/public/affiliates/onlinerooms/?wm=9cg6A&client_ip=${request_ip}`;
-
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Process the fetched data
-            // console.log(data);
-            // Additional logic to display the data on your web page
-        })
-        .catch(error => {
-            // console.error('There has been a problem with your fetch operation:', error);
-        });
-}
-
-// Call the function to fetch data on page load (or as needed)
-fetchData();
-
-
-// Sample user data (replace with your actual user data)
-const users = [
-    new User('User 1', 25, true, 'images/user1.jpg'),
-    new User('User 2', 32, false, 'images/user2.jpg'),
-    // ... more users
-];
-
-const userGrid = new UserGrid(users);
+  }
+  
+  // Decorator function to log clicks
+  function logClick(target, name, descriptor) {
+    const originalMethod = descriptor.value;
+    descriptor.value = function(...args) {
+      console.log(`User clicked on ${args[0].name}`);
+      return originalMethod.apply(this, args);
+    };
+    return descriptor;
+  }
+  
+  // Fetch user data from JSON file
+  fetch('https://chaturbate.com/api/public/affiliates/onlinerooms/?wm=9cg6A&client_ip=request_ip')
+    .then(response => response.json())
+    .then(data => {
+      const users = data.results.map(userData => new User(userData));
+      const userGrid = new UserGrid(users);
+    });
+  

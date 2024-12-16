@@ -99,3 +99,161 @@
     list-style: none;
     padding: 0;
 }
+
+  #click-count {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 16px;
+  }
+
+  #users-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .user-image {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .user-image img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+  }
+
+  .user-details-small {
+    position: absolute;
+    bottom: 5px;
+    font-size: 12px;
+    color: white;
+  }
+
+  .age {
+    left: 5px;
+  }
+
+  .new {
+    right: 5px;
+  }
+
+  #user-details {
+    width: 100%;
+    height: 300px;
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    overflow-y: scroll; /* Add scrollbar for overflowing content */
+  }
+
+  #pagination {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  #clicked-users-list {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: none;
+    /* Initially hidden */
+  }
+
+  #clicked-users-list.show {
+    display: block;
+    /* Display when active */
+  }
+
+  #clicked-users-list img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+/* Basic styling - customize as needed */
+#search-container {
+    margin-bottom: 20px;
+}
+#user-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+    gap: 20px;
+}
+.user-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer; /* Add cursor style for better user experience */
+}
+.user-card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+#user-popup {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: none; /* Initially hidden */
+}
+#user-popup img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+/* Styles for the clicked users list */
+#clicked-users-list {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: none; /* Initially hidden */
+}
+#clicked-users-list.show {
+    display: block; /* Display when active */
+}
+#clicked-users-list img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 5px;
+    cursor: pointer; /* Add cursor style for better user experience */
+}
+/* ... (Previous CSS styles) ... */
+
+#user-grid {
+  display: flex;
+  flex-wrap: wrap; 
+  justify-content: space-around; 
+}
+
+.user-card {
+  width: 45%; /* Adjust as needed for responsiveness */
+  margin-bottom: 10px;
+}
+
+/* Media queries for responsiveness */
+@media (min-width: 768px) { 
+  .user-card {
+    width: 30%; 
+  }
+}
+
+@media (min-width: 992px) { 
+  .user-card {
+    width: 20%; 
+  }
+}
