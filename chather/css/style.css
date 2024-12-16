@@ -257,3 +257,39 @@
     width: 20%; 
   }
 }
+
+/* Search Input */
+#search-input {
+    width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  /* Search Suggestions */
+  #search-suggestions {
+    position: absolute;
+    top: 100%; /* Position below the search input */
+    left: 0;
+    width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    z-index: 10; /* Ensure it appears above other elements */
+  }
+  
+  #search-suggestions li {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  #search-suggestions li:hover {
+    background-color: #f0f0f0;
+  }
+  
